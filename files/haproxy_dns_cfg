@@ -21,16 +21,16 @@ global
   log 127.0.0.1 local0
   log 127.0.0.1 local1 notice
   maxconn 4096
-  user haproxy
-  group haproxy
+  user apache
+  group apache
 
 defaults
   log         global
   retries     3
   maxconn     2000
-  contimeout  5000
-  clitimeout  50000
-  srvtimeout  50000
+  timeout connect  5000
+  timeout client  50000
+  timeout server  50000
   stats enable
   stats auth admin:admin
   stats uri /haproxy
@@ -39,7 +39,7 @@ EOF
 }
 
 function marathon_apps {
-  z="`curl -H "Accept: text/plain" -s "$1/v2/tasks"`"
+  z="`curl -H "Accept: text/plain" -s "$1/v2/tasks" | awk '!a[$1]++'`"
 
   frontend "$z"
   backend "$z"
@@ -61,7 +61,7 @@ EOF
     set -- $REPLY
     local name="$1"
     cat <<EOF
-  acl host_${name} hdr_beg(host) -i ${name}
+  acl host_${name} path_beg ${gapps[${name}]}
   use_backend ${name}_cluster if host_${name}
 
 EOF
@@ -69,7 +69,7 @@ EOF
 }
 
 function backend {
-  while IFS= read 
+  while IFS= read
   do
     set -- $REPLY
     local name="$1"
@@ -106,5 +106,7 @@ function out { printf '%s\n' "$*" ;}
 
 if [[ ${1:-} ]] && declare -F | cut -d' ' -f3 | fgrep -qx -- "${1:-}"
 then "$@"
-else main "$@"
+else
+  eval `curl -H "Accept: application/json" -s "$1/v2/apps" | python marathon_apps.py`
+  main "$@"
 fi
