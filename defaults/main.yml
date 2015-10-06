@@ -19,6 +19,7 @@ mesos_zookeeper_masters: "zk://{{ zookeeper_hostnames }}{{ mesos_zookeeper_path 
 marathon_zookeeper_state: "zk://{{ zookeeper_hostnames }}{{ marathon_zookeeper_path }}"
 #DISABLED haproxy_script_location: "/usr/local/bin"
 haproxy_script_location: ""
+haproxy_listen_port: "80"
 
 # optional
 artifact_store: ""
