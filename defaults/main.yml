@@ -24,3 +24,4 @@ haproxy_listen_port: "80"
 # optional
 artifact_store: ""
 checkpoint: "true"
+marathon_event_subscriber: "http_callback"

@@ -14,6 +14,10 @@
   template: src=artifact_store.j2 dest=/etc/marathon/conf/artifact_store
   when: artifact_store != ""
 
+- name: Set optional --event_subscriber option
+  template: src=event_subscriber.j2 dest=/etc/marathon/conf/event_subscriber
+  when: marathon_event_subscriber != ""
+
 - name: Remove optional --checkpoint option
   file: path=/etc/marathon/conf/?checkpoint state=absent
   when: checkpoint == ""
