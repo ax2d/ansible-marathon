@@ -1,5 +1,12 @@
-#! /bin/sh
+#!/bin/sh
 
-{{ haproxy_script_location }}/haproxy_dns_cfg {{ marathon_hostname }}:{{ marathon_port }} > /etc/haproxy/haproxy.cfg
+{{ haproxy_script_location }}/haproxy_dns_cfg {{ marathon_hostname }}:{{ marathon_port }} > {{ haproxy_script_location }}/haproxy.cfg.new
 
-systemctl restart haproxy
+diff -q {{ haproxy_script_location }}/haproxy.cfg.new {{ haproxy_script_location }}/haproxy.cfg
+if [[ $? != "0" ]]
+then
+  mv {{ haproxy_script_location }}/haproxy.cfg.new {{ haproxy_script_location }}/haproxy.cfg
+
+  # gracefully reload haproxy config
+  haproxy -f {{ haproxy_script_location }}/haproxy.cfg -p /run/haproxy.pid -sf $(cat /run/haproxy.pid)
+fi

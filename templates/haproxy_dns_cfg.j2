@@ -29,8 +29,8 @@ defaults
   retries     3
   maxconn     2000
   timeout connect  5000
-  timeout client  50000
-  timeout server  50000
+  timeout client  100000
+  timeout server  100000
   stats enable
   stats auth admin:admin
   stats uri /haproxy
@@ -78,6 +78,7 @@ function backend {
     cat <<EOF
 
 backend ${name}_cluster
+  option httpchk GET /healthcheck
   option httpclose
   option forwardfor
   mode http
@@ -85,7 +86,7 @@ backend ${name}_cluster
 EOF
     while [[ $# -gt 0 ]]
     do
-      out "  server ${name}-$# $1 check"
+      out "  server ${name}-$# $1"
       shift
     done
   done <<< "$1"
