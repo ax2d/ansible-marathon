@@ -78,7 +78,6 @@ function backend {
     cat <<EOF
 
 backend ${name}_cluster
-  option httpchk GET /healthcheck
   option httpclose
   option forwardfor
   mode http
@@ -86,7 +85,16 @@ backend ${name}_cluster
 EOF
     while [[ $# -gt 0 ]]
     do
-      out "  server ${name}-$# $1"
+      if [ "$name" == "gondola-command-center-ui" ]
+      then
+        out "  reqrep ^(.*)\ /gondolier/(.*) \1\ /\2"
+        out "  option httpchk HEAD /"
+        out "  server ${name}-$# $1 check inter 30000"
+      else
+        out "  option httpchk GET /healthcheck"
+        out "  http-check expect ! string unhealthy"
+        out "  server ${name}-$# $1 check port $((`echo $1|cut -d: -f2` + 1 )) check inter 30000"
+      fi
       shift
     done
   done <<< "$1"
