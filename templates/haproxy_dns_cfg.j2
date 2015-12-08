@@ -39,7 +39,7 @@ EOF
 }
 
 function marathon_apps {
-  z="`curl -H "Accept: text/plain" -s "$1/v2/tasks" | awk '!a[$1]++'`"
+  z="`curl -H "Accept: text/plain" -s "$1/v2/tasks" | sort | awk '!a[$1]++'`"
 
   frontend "$z"
   backend "$z"
@@ -60,8 +60,13 @@ EOF
   do
     set -- $REPLY
     local name="$1"
+    if [ "$name" == "gondola-endpoint-http-translate" ]
+    then
+      echo "  acl host_${name} path_reg ${gapps[${name}]}"
+    else
+      echo "  acl host_${name} path_beg ${gapps[${name}]}"
+    fi
     cat <<EOF
-  acl host_${name} path_beg ${gapps[${name}]}
   use_backend ${name}_cluster if host_${name}
 
 EOF
